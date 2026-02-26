@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健康习惯打卡</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="header-title">
+                <h1>每日习惯</h1>
+                <span class="header-icon">🏃‍♂️🥗</span>
+            </div>
+            <div class="date-control">
+                <p class="date-display" id="currentDate">加载中...</p>
+                <input type="date" id="datePicker" class="date-input">
+            </div>
+        </header>
+
+        <section class="progress-section">
+            <!-- 每日完成率 -->
+            <div class="progress-header">
+                <span>每日完成率</span>
+                <span id="dailyProgressText">0/3</span>
+            </div>
+            <div class="progress-bar-container" style="margin-bottom: 15px;">
+                <div class="progress-bar" id="dailyProgressBar"></div>
+            </div>
+
+            <!-- 每周完成率 -->
+            <div class="progress-header">
+                <span>每周完成率</span>
+                <span id="weeklyProgressText">0/7</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="weeklyProgressBar"></div>
+            </div>
+            
+            <!-- 周打卡进程视图 -->
+            <div class="week-view" id="weekView">
+                <!-- JS 动态渲染 -->
+            </div>
+        </section>
+
+        <section class="habits-section">
+            <ul class="habit-list" id="habitList">
+                <!-- 习惯列表将由 JS 动态渲染 -->
+            </ul>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
