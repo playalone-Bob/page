@@ -35,6 +35,29 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
+.back-nav {
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background-color: var(--item-bg);
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background-color: var(--item-bg-hover);
+    color: var(--accent-color);
+}
+
 header {
     margin-bottom: 30px;
 }
