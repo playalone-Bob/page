@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HabitSprout 习惯小芽 | 你的 AI 健康小精灵</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Indie+Flower&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['Nunito', 'sans-serif'],
+                        hand: ['"Indie Flower"', 'cursive'],
                     },
                     colors: {
                         green: {
@@ -84,6 +85,93 @@
         .faq-icon.open {
             transform: rotate(180deg);
         }
+
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            z-index: 9999;
+            width: 90%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-container.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* 精灵展示区 */
+        .elf-display {
+            position: relative;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .elf-character {
+            font-size: 80px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .xp-popup {
+            position: absolute;
+            top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #22c55e;
+            opacity: 0;
+            animation: xpFloat 1s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes xpFloat {
+            0% { opacity: 0; transform: translateY(0); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-30px); }
+        }
+
+        /* 心情表情激活状态 */
+        .active-mood {
+            transform: scale(1.5) !important;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+
     </style>
 </head>
 <body class="bg-green-50 text-gray-800 font-sans antialiased selection:bg-green-200 selection:text-green-900 noise-bg">
@@ -95,9 +183,11 @@
                 🌱 HabitSprout
             </div>
             <div class="hidden md:flex gap-6 text-green-800 font-semibold">
+                <a href="#" class="hover:text-green-600 transition-colors">关于我们</a>
                 <a href="#features" class="hover:text-green-600 transition-colors">魔法功能</a>
                 <a href="#pricing" class="hover:text-green-600 transition-colors">领养方案</a>
-                <a href="#faq" class="hover:text-green-600 transition-colors">小芽问答</a>
+                <a href="#faq" class="hover:text-green-600 transition-colors">用户反馈</a>
+                <a href="#contact" class="hover:text-green-600 transition-colors">联系我们</a>
             </div>
         </nav>
 
@@ -115,7 +205,7 @@
                     HabitSprout 结合 AI 魔法，把枯燥的打卡变成好玩的养成游戏。拍拍美食、聊聊心事，你的专属 AI 健康小精灵陪你一起发芽长大。
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <button class="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1">
+                    <button onclick="openAdoptModal()" class="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1">
                         领养我的小精灵
                     </button>
                     <button class="glass-card text-green-800 hover:bg-white/90 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-sm">
@@ -180,37 +270,35 @@
         </div>
 
         <div class="grid md:grid-cols-2 gap-8">
-            <!-- 卡片 1 (明确习惯打卡) -->
-            <a href="habit/habit-tracker/index.html" class="block">
-                <div class="glass-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 cursor-pointer group h-full">
-                    <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🌱</div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-3">好习惯贴贴</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        自定义你的专属习惯，每日打卡记录，记录坚持的每一步，让改变悄悄发生！
-                    </p>
-                </div>
-            </a>
+            <!-- 卡片 1 (明确习惯打卡) - 改为模态框触发 -->
+            <div class="glass-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 cursor-pointer group h-full" onclick="openHabitTracker()">
+                <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🌱</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">好习惯贴贴</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    自定义你的专属习惯，每日打卡记录，记录坚持的每一步，让改变悄悄发生！
+                </p>
+            </div>
 
             <!-- 卡片 2 -->
-            <div class="glass-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 cursor-pointer group">
-                <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🥑</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-3">咔嚓！魔法食谱</h3>
+            <div class="glass-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 cursor-pointer group" onclick="openRecipeModal()">
+                <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🥗</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">魔法食谱</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    拍一张冰箱里的剩菜，AI 瞬间变出健康又好吃的减脂餐做法。放下卡路里焦虑，回归对食物的纯粹享受。
+                    告别盲目节食。基于你的代谢率与口味偏好，AI 精确计算三大营养素配比，为你定制每一餐的完美方案。吃出好身材，就是这么科学。
                 </p>
             </div>
 
             <!-- 卡片 3 -->
-            <div class="glass-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 cursor-pointer group">
+            <div class="glass-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 cursor-pointer group" onclick="openSleepModal()">
                 <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">☁️</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-3">呼噜噜助眠云</h3>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">呼噜云</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    睡不着？和小精灵聊聊今天的烦恼，它会捕捉你未曾察觉的压力，为你定制专属的白噪音和睡前故事。
+                    睡不着？和呼噜云聊聊今天的烦恼，它会捕捉你未曾察觉的压力，为你定制专属的白噪音和睡前故事。
                 </p>
             </div>
 
             <!-- 卡片 4 -->
-            <div class="glass-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 cursor-pointer group">
+            <div class="glass-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 cursor-pointer group" onclick="openDiaryModal()">
                 <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">✨</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-3">活力成长日记</h3>
                 <p class="text-gray-600 leading-relaxed">
@@ -303,8 +391,75 @@
                 </button>
                 <div class="faq-content bg-transparent">
                     <p class="px-8 pb-6 text-gray-600 leading-relaxed">
-                        完全没有惩罚！我们提倡“温柔的习惯养成”。如果断签了，小精灵会给你一个温暖的抱抱，并主动帮你降低第二天的目标难度，陪你慢慢找回状态。允许自己偶尔停下，也是一种前行。
+                        完全没有惩罚！我们提倡“温柔的习惯养成”。如果断签了，小精灵会给你一个温暖的抱抱，陪你慢慢找回状态。允许自己偶尔停下，也是一种前行。
                     </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户反馈输入框 -->
+        <div class="mt-12 glass-card p-8 rounded-3xl shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-300 to-green-500"></div>
+            <h3 class="text-xl font-bold text-green-900 mb-4 flex items-center gap-2">
+                <span>💌</span> 还有悄悄话想对小芽说？
+            </h3>
+            <div class="relative">
+                <textarea id="feedbackInput" rows="4" class="w-full bg-white/60 border-2 border-green-100 rounded-2xl p-4 text-gray-700 placeholder-green-800/30 focus:outline-none focus:border-green-400 focus:bg-white/80 transition-all resize-none" placeholder="请输入你的反馈、建议，或者只是想聊聊天..."></textarea>
+                <button onclick="submitFeedback()" class="absolute bottom-4 right-4 bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                    发送信件 ✉️
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Contact 联系我们 (路演特别版) -->
+    <section id="contact" class="max-w-5xl mx-auto px-6 py-20">
+        <div class="glass-card rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden border-2 border-green-100/50">
+            <!-- 背景装饰 -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-green-200/30 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-yellow-100/30 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none"></div>
+            
+            <div class="relative z-10 grid md:grid-cols-5 gap-12 items-center">
+                <!-- 左侧：CEO信息 (占2/5) -->
+                <div class="md:col-span-2">
+                    <div class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold mb-4">👨‍💻 团队介绍</div>
+                    <h2 class="text-5xl font-extrabold text-gray-700 mb-1">Bob</h2>
+                    <p class="text-xl font-medium text-green-600 mb-6">CEO</p>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        致力于用代码和爱心，让世界更健康一点点。从 0 到 1 打造了 HabitSprout，期待与您携手共创未来。
+                    </p>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 text-gray-700 font-medium group cursor-pointer">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">📧</div>
+                            <a href="mailto:bobasketball6682@163.com" class="hover:text-green-600 transition-colors">bobasketball6682@163.com</a>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-700 font-medium group cursor-pointer">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">📍</div>
+                            <span>中国 · 深圳</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧：投资召唤 (占3/5) -->
+                <div class="md:col-span-3 bg-white/60 backdrop-blur-sm rounded-3xl p-8 border border-green-100 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-3xl">🌱</span>
+                    </div>
+                    <p class="text-gray-700 text-lg font-medium leading-relaxed mb-6">
+                        HabitSprout 正在茁壮成长，急需“阳光雨露”！
+                        <br><br>
+                        <span class="text-2xl font-bold text-green-800 block mb-2">欢迎各位老板来“施肥”！</span>
+                        <span class="text-sm text-gray-500">每一分投资都会转化成用户的健康值（以及您可观的回报率）🚀</span>
+                    </p>
+                    <div class="flex flex-col gap-3">
+                        <button class="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                            <span>☕</span> 请我喝杯咖啡（聊聊投资）
+                        </button>
+                        <button class="w-full bg-white hover:bg-green-50 text-green-700 border border-green-200 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                            <span>📄</span> 获取商业计划书 (BP)
+                        </button>
+                    </div>
+                    <p class="text-center text-xs text-gray-400 mt-4">* 接受人民币、美元，也接受服务器算力赞助 😉</p>
                 </div>
             </div>
         </div>
@@ -327,6 +482,903 @@
         </div>
     </footer>
     </div> <!-- 结束 z-10 容器 -->
+
+    <!-- 领养精灵模态框 -->
+    <div class="modal-overlay" id="adoptModal" onclick="closeAdoptModal()"></div>
+    <div class="modal-container glass-card rounded-3xl shadow-2xl p-8" id="adoptModalContent" style="max-width: 600px;">
+        <!-- 关闭按钮 -->
+        <button onclick="closeAdoptModal()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/80 hover:bg-white flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors z-10">
+            ✕
+        </button>
+
+        <!-- 标题 -->
+        <h2 class="text-2xl font-bold text-gray-800 text-center mb-2">选择你的伙伴</h2>
+        <p class="text-center text-gray-600 text-sm mb-8">选择一个精灵，开启你的健康养成之旅</p>
+
+        <!-- 精灵展示区 -->
+        <div class="grid grid-cols-3 gap-6 mb-8">
+            <!-- 绿色精灵：小芽 -->
+            <div class="flex flex-col items-center group cursor-pointer">
+                <div class="w-28 h-28 rounded-full bg-green-100 flex items-center justify-center mb-4 border-4 border-green-300 overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg relative">
+                    <!-- 添加一个柔光遮罩，让图片看起来更简约柔和 -->
+                    <div class="absolute inset-0 bg-green-500/10 mix-blend-overlay z-10"></div>
+                    <img src="小芽.jpg" alt="小芽" class="w-full h-full object-cover filter saturate-[0.85] contrast-[1.1] group-hover:saturate-100 transition-all duration-300">
+                </div>
+            </div>
+
+            <!-- 红色精灵：小火猴 -->
+            <div class="flex flex-col items-center group cursor-pointer">
+                <div class="w-28 h-28 rounded-full bg-red-100 flex items-center justify-center mb-4 border-4 border-red-300 overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg relative">
+                    <div class="absolute inset-0 bg-red-500/10 mix-blend-overlay z-10"></div>
+                    <img src="小火猴.jpg" alt="小火猴" class="w-full h-full object-cover filter saturate-[0.85] contrast-[1.1] group-hover:saturate-100 transition-all duration-300">
+                </div>
+            </div>
+
+            <!-- 蓝色精灵：水精灵 -->
+            <div class="flex flex-col items-center group cursor-pointer">
+                <div class="w-28 h-28 rounded-full bg-blue-100 flex items-center justify-center mb-4 border-4 border-blue-300 overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg relative">
+                    <div class="absolute inset-0 bg-blue-500/10 mix-blend-overlay z-10"></div>
+                    <img src="水精灵.jpg" alt="水精灵" class="w-full h-full object-cover filter saturate-[0.85] contrast-[1.1] group-hover:saturate-100 transition-all duration-300">
+                </div>
+            </div>
+        </div>
+
+        <!-- 提示文字 -->
+        <p class="text-center text-sm text-gray-500">点击精灵即可选择</p>
+    </div>
+
+    <!-- 魔法食谱模态框 -->
+    <div class="modal-overlay" id="recipeModal" onclick="closeRecipeModal()"></div>
+    <div class="modal-container glass-card rounded-3xl shadow-2xl p-0 overflow-hidden" id="recipeModalContent" style="max-width: 500px; max-height: 85vh;">
+        <!-- 顶部 Header -->
+        <div class="relative h-48 bg-green-100">
+            <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Healthy Food" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-1 font-serif">魔法食谱</h2>
+                    <p class="text-white/90 text-sm">AI 为你精心搭配的营养盛宴</p>
+                </div>
+            </div>
+            <button onclick="closeRecipeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-sm flex items-center justify-center text-white transition-colors">✕</button>
+        </div>
+
+        <!-- 内容区域 (可滚动) -->
+        <div class="p-6 overflow-y-auto" style="max-height: calc(85vh - 12rem);">
+            <!-- 食谱卡片 1 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 group hover:shadow-md transition-all">
+                <div class="h-40 overflow-hidden relative">
+                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Buddha Bowl" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-green-700">
+                        450 kcal
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">阳光加州大虾碗</h3>
+                    <!-- 营养成分 -->
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <div class="text-center p-2 bg-orange-50 rounded-xl">
+                            <div class="text-xs text-gray-500 mb-1">碳水</div>
+                            <div class="font-bold text-orange-600">48g</div>
+                        </div>
+                        <div class="text-center p-2 bg-blue-50 rounded-xl">
+                            <div class="text-xs text-gray-500 mb-1">蛋白质</div>
+                            <div class="font-bold text-blue-600">28g</div>
+                        </div>
+                        <div class="text-center p-2 bg-yellow-50 rounded-xl">
+                            <div class="text-xs text-gray-500 mb-1">脂肪</div>
+                            <div class="font-bold text-yellow-600">15g</div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 line-clamp-2">
+                        精选太平洋大虾，搭配新鲜牛油果与有机藜麦，淋上特制柠檬油醋汁，清爽不腻。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 食谱卡片 2 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 group hover:shadow-md transition-all">
+                <div class="h-40 overflow-hidden relative">
+                    <img src="https://images.unsplash.com/photo-1532550907401-a500c9a57435?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Chicken" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-green-700">
+                        380 kcal
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">慢烤鸡胸肉佐时蔬</h3>
+                    <!-- 营养成分 -->
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <div class="text-center p-2 bg-orange-50 rounded-xl">
+                            <div class="text-xs text-gray-500 mb-1">碳水</div>
+                            <div class="font-bold text-orange-600">30g</div>
+                        </div>
+                        <div class="text-center p-2 bg-blue-50 rounded-xl">
+                            <div class="text-xs text-gray-500 mb-1">蛋白质</div>
+                            <div class="font-bold text-blue-600">35g</div>
+                        </div>
+                        <div class="text-center p-2 bg-yellow-50 rounded-xl">
+                            <div class="text-xs text-gray-500 mb-1">脂肪</div>
+                            <div class="font-bold text-yellow-600">8g</div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 line-clamp-2">
+                        低温慢煮锁住肉汁，搭配当季烤蔬菜，撒上迷迭香与黑胡椒，低脂也能很美味。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 食谱卡片 3 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8 group hover:shadow-md transition-all">
+                <div class="h-40 overflow-hidden relative">
+                    <img src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Mediterranean Bowl" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-green-700">
+                        420 kcal
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">地中海藜麦能量碗</h3>
+                    <!-- 营养成分 -->
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <div class="text-center p-2 bg-orange-50 rounded-xl">
+                            <div class="text-xs text-gray-500 mb-1">碳水</div>
+                            <div class="font-bold text-orange-600">45g</div>
+                        </div>
+                        <div class="text-center p-2 bg-blue-50 rounded-xl">
+                            <div class="text-xs text-gray-500 mb-1">蛋白质</div>
+                            <div class="font-bold text-blue-600">22g</div>
+                        </div>
+                        <div class="text-center p-2 bg-yellow-50 rounded-xl">
+                            <div class="text-xs text-gray-500 mb-1">脂肪</div>
+                            <div class="font-bold text-yellow-600">18g</div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 line-clamp-2">
+                        融合地中海饮食精髓，选用特级初榨橄榄油拌制，富含 Omega-3 与膳食纤维，为大脑和身体注入持久能量。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 底部按钮 -->
+            <button class="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-green-600 to-emerald-600 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group relative overflow-hidden">
+                <span class="relative z-10">✨ 定制我的专属食谱</span>
+                <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+            </button>
+            <p class="text-center text-xs text-gray-400 mt-3">
+                * 该功能即将上线，敬请期待
+            </p>
+        </div>
+    </div>
+
+    <!-- 呼噜云模态框 -->
+    <div class="modal-overlay" id="sleepModal" onclick="closeSleepModal()"></div>
+    <div class="modal-container rounded-3xl shadow-2xl p-0 overflow-hidden" id="sleepModalContent" style="max-width: 450px; max-height: 85vh; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);">
+        <!-- 顶部 Header -->
+        <div class="relative h-40 bg-gradient-to-b from-indigo-900/50 to-transparent p-6 flex flex-col justify-end">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-full bg-indigo-500/30 backdrop-blur-sm flex items-center justify-center text-3xl border border-indigo-400/30">
+                    ☁️
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white mb-1">呼噜云</h2>
+                    <p class="text-indigo-200 text-sm">你的压力舒缓师</p>
+                </div>
+            </div>
+            <button onclick="closeSleepModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-colors">✕</button>
+        </div>
+
+        <!-- 聊天区域 -->
+        <div class="p-6 overflow-y-auto" style="max-height: calc(85vh - 16rem);" id="chatContainer">
+            <!-- 欢迎消息 -->
+            <div class="flex gap-3 mb-6">
+                <div class="w-8 h-8 rounded-full bg-indigo-500/30 flex items-center justify-center text-sm flex-shrink-0">☁️</div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl rounded-tl-sm p-4 max-w-[80%]">
+                    <p class="text-indigo-100 text-sm leading-relaxed">
+                        晚上好呀～我是呼噜云，一个专门倾听你心事的温柔存在。今天过得怎么样？有什么烦恼想要和我聊聊吗？🌙
+                    </p>
+                </div>
+            </div>
+
+            <!-- 用户输入示例 -->
+            <div class="flex gap-3 mb-6 justify-end">
+                <div class="bg-indigo-500/40 backdrop-blur-sm rounded-2xl rounded-tr-sm p-4 max-w-[80%]">
+                    <p class="text-white text-sm leading-relaxed">
+                        最近工作压力好大，总是睡不着...
+                    </p>
+                </div>
+            </div>
+
+            <!-- AI回复 -->
+            <div class="flex gap-3 mb-6">
+                <div class="w-8 h-8 rounded-full bg-indigo-500/30 flex items-center justify-center text-sm flex-shrink-0">☁️</div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl rounded-tl-sm p-4 max-w-[80%]">
+                    <p class="text-indigo-100 text-sm leading-relaxed mb-3">
+                        我能感受到你的疲惫...工作压力确实会让人身心俱疲。但请记住，你已经很努力了，值得被温柔对待。💙
+                    </p>
+                    <p class="text-indigo-100 text-sm leading-relaxed">
+                        让我为你推荐一些轻松的音乐，希望能帮你放松下来，今晚睡个好觉～
+                    </p>
+                </div>
+            </div>
+
+            <!-- 音乐推荐区域 -->
+            <div class="mt-6 mb-4">
+                <p class="text-indigo-300 text-xs mb-3 uppercase tracking-wider font-medium">为你推荐的歌单</p>
+                
+                <!-- 歌单 1 -->
+                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3 mb-3 flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer group">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-lg flex-shrink-0">
+                        🎵
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-white text-sm font-medium truncate">深夜疗愈钢琴曲</h4>
+                        <p class="text-indigo-300 text-xs truncate">轻柔旋律 · 安抚心灵</p>
+                    </div>
+                    <button class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors">
+                        ▶
+                    </button>
+                </div>
+
+                <!-- 歌单 2 -->
+                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3 mb-3 flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer group">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-lg flex-shrink-0">
+                        🌊
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-white text-sm font-medium truncate">海浪与轻音乐</h4>
+                        <p class="text-indigo-300 text-xs truncate">自然白噪音 · 深度放松</p>
+                    </div>
+                    <button class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors">
+                        ▶
+                    </button>
+                </div>
+
+                <!-- 歌单 3 -->
+                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer group">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center text-lg flex-shrink-0">
+                        🎸
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-white text-sm font-medium truncate">民谣时光</h4>
+                        <p class="text-indigo-300 text-xs truncate">温暖人声 · 治愈夜晚</p>
+                    </div>
+                    <button class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors">
+                        ▶
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="p-4 border-t border-white/10 bg-white/5 backdrop-blur-sm">
+            <div class="flex gap-3">
+                <input type="text" placeholder="和呼噜云聊聊你的烦恼..." class="flex-1 bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-indigo-300/50 focus:outline-none focus:border-indigo-400/50 focus:bg-white/15 transition-colors">
+                <button class="w-10 h-10 rounded-xl bg-indigo-500/40 hover:bg-indigo-500/60 flex items-center justify-center text-white transition-colors">
+                    ➤
+                </button>
+            </div>
+            <p class="text-center text-xs text-indigo-400/60 mt-3">
+                呼噜云会认真倾听，为你保守秘密 🤫
+            </p>
+        </div>
+    </div>
+
+    <!-- 成长日记模态框 -->
+    <div class="modal-overlay" id="diaryModal" onclick="closeDiaryModal()"></div>
+    <div class="modal-container rounded-3xl shadow-2xl p-0 overflow-hidden" id="diaryModalContent" style="max-width: 450px; max-height: 85vh; background-color: #fffbeb; background-image: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 20px 20px;">
+        
+        <!-- 顶部装饰：胶带 -->
+        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-yellow-200/80 rotate-1 z-10" style="box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+
+        <!-- 关闭按钮 -->
+        <button onclick="closeDiaryModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 transition-colors z-20 font-hand text-2xl">✕</button>
+
+        <!-- 内容区域 -->
+        <div class="p-8 pt-12 font-hand text-gray-700 h-full overflow-y-auto">
+            
+            <!-- 标题与日期 -->
+            <div class="flex justify-between items-end mb-8 border-b-2 border-gray-300 border-dashed pb-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800 transform -rotate-2">成长日记</h2>
+                    <p class="text-lg text-gray-500 mt-1" id="diaryDateRange">2026.02.22 ~ 2026.02.28</p>
+                </div>
+                <!-- 精灵照片（拍立得风格） -->
+                <div class="relative transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                    <div class="bg-white p-2 pb-8 shadow-md border border-gray-200 w-24">
+                        <img src="小芽.jpg" alt="小芽" class="w-full h-20 object-cover filter contrast-110">
+                        <div class="text-center mt-2 text-xs text-gray-400">我和小芽</div>
+                    </div>
+                    <!-- 贴纸 -->
+                    <div class="absolute -top-2 -right-2 text-2xl">✨</div>
+                </div>
+            </div>
+
+            <!-- 本周打卡（手绘风格） -->
+            <div class="mb-8 relative">
+                <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <span class="text-green-500">#</span> 本周打卡
+                </h3>
+                
+                <!-- 涂鸦箭头 -->
+                <div class="absolute right-0 top-0 text-gray-300 transform rotate-12 text-4xl">⤵</div>
+
+                <div class="space-y-4">
+                    <!-- 习惯 1 -->
+                    <div class="flex items-center justify-between">
+                        <span class="text-xl">💧 喝水 2000ml</span>
+                        <div class="flex gap-1">
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-gray-300 text-xl">○</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-gray-300 text-xl">○</span>
+                        </div>
+                    </div>
+                    <!-- 习惯 2 -->
+                    <div class="flex items-center justify-between">
+                        <span class="text-xl">🏃‍♀️ 运动 30分钟</span>
+                        <div class="flex gap-1">
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-gray-300 text-xl">○</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-gray-300 text-xl">○</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-green-500 text-xl">●</span>
+                        </div>
+                    </div>
+                    <!-- 习惯 3 -->
+                    <div class="flex items-center justify-between">
+                        <span class="text-xl">🥗 健康饮食</span>
+                        <div class="flex gap-1">
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-green-500 text-xl">●</span>
+                            <span class="text-gray-300 text-xl">○</span>
+                            <span class="text-gray-300 text-xl">○</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 心情记录 -->
+            <div class="mb-8 p-4 bg-white/50 rounded-xl border-2 border-gray-200 border-dashed relative">
+                <h3 class="text-xl font-bold mb-2">心情记录</h3>
+                <div class="flex justify-between text-2xl" id="moodContainer">
+                    <span class="mood-emoji cursor-pointer transition-transform duration-300 hover:scale-110" onclick="selectMood(this)">😫</span>
+                    <span class="mood-emoji cursor-pointer transition-transform duration-300 hover:scale-110" onclick="selectMood(this)">😐</span>
+                    <span class="mood-emoji cursor-pointer transition-transform duration-300 hover:scale-110" onclick="selectMood(this)">🙂</span>
+                    <span class="mood-emoji cursor-pointer transition-transform duration-300 hover:scale-110 active-mood" onclick="selectMood(this)">😄</span>
+                    <span class="mood-emoji cursor-pointer transition-transform duration-300 hover:scale-110" onclick="selectMood(this)">🥰</span>
+                </div>
+                <!-- 选中标记 (移除，因为现在直接放大表情本身) -->
+            </div>
+
+            <!-- 底部手写笔记 -->
+            <div class="relative">
+                <p class="text-lg leading-relaxed text-gray-600" style="transform: rotate(-1deg);">
+                    "今天也是元气满满的一天！运动完感觉整个人都轻盈了，小芽好像也长高了一点点 🌱"
+                </p>
+                <div class="text-right mt-2 text-gray-400 text-sm">- 我</div>
+                
+                <!-- 装饰贴纸 -->
+                <div class="absolute -bottom-2 -right-2 text-4xl opacity-80 transform rotate-12">🌟</div>
+                <div class="absolute -top-4 -left-4 text-3xl opacity-50 transform -rotate-12">✏️</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 习惯打卡模态框 -->
+    <div class="modal-overlay" id="habitModal" onclick="closeHabitTracker()"></div>
+    <div class="modal-container glass-card rounded-3xl shadow-2xl p-6" id="habitModalContent" style="max-width: 500px;">
+        <!-- 关闭按钮 -->
+        <button onclick="closeHabitTracker()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/80 hover:bg-white flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors z-10">
+            ✕
+        </button>
+
+        <!-- 精灵展示区 -->
+        <div class="elf-display" style="height: 150px; margin-bottom: 10px;">
+            <div class="elf-character" id="elfCharacter" style="font-size: 60px;">🌱</div>
+            <div id="xpPopup"></div>
+        </div>
+
+        <!-- 等级和经验条 -->
+        <div class="mb-4">
+            <div class="flex justify-between text-xs font-bold text-green-700 mb-1">
+                <span id="levelText">Lv.1 萌芽期</span>
+                <span id="xpText">0/100 XP</span>
+            </div>
+            <div class="w-full bg-white/50 rounded-full h-2 overflow-hidden">
+                <div id="xpBar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- 日期控制 -->
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-gray-800" id="currentDate">今天</h2>
+            <input type="date" id="datePicker" class="border border-gray-300 rounded-lg px-3 py-1 text-sm text-gray-700 bg-white focus:outline-none focus:border-green-500 cursor-pointer">
+        </div>
+
+        <!-- 进度统计 -->
+        <div class="mb-4 p-4 bg-white/60 rounded-2xl">
+            <div class="mb-3">
+                <div class="flex justify-between text-xs font-semibold text-gray-700 mb-1">
+                    <span>今日完成</span>
+                    <span id="dailyProgressText">0/3</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div id="dailyProgressBar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between text-xs font-semibold text-gray-700 mb-1">
+                    <span>本周完成</span>
+                    <span id="weeklyProgressText">0/7</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div id="weeklyProgressBar" class="bg-green-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 周视图 -->
+        <div class="flex justify-between mb-4 pb-4 border-b border-gray-200" id="weekView">
+            <!-- 周视图将通过 JavaScript 动态生成 -->
+        </div>
+
+        <!-- 习惯列表 -->
+        <div class="space-y-2" id="habitList">
+            <!-- 习惯项将通过 JavaScript 动态生成 -->
+        </div>
+    </div>
+
+    <!-- 习惯打卡脚本 -->
+    <script>
+        // 默认习惯数据
+        const DEFAULT_HABITS = [
+            { id: "habit_1", name: "喝水", icon: "💧" },
+            { id: "habit_2", name: "运动", icon: "🏃" },
+            { id: "habit_3", name: "早餐", icon: "🥗" }
+        ];
+
+        // 精灵形态（根据等级）
+        const ELF_FORMS = {
+            1: { emoji: "🌱", name: "萌芽期" },
+            8: { emoji: "🌿", name: "成长期" },
+            15: { emoji: "🌳", name: "成熟期" }
+        };
+
+        // 当前选中的日期
+        let selectedDate = '';
+
+        // 初始化数据
+        function initHabitData() {
+            if (!localStorage.getItem('habit_tracker_habits')) {
+                localStorage.setItem('habit_tracker_habits', JSON.stringify(DEFAULT_HABITS));
+            }
+            if (!localStorage.getItem('habit_tracker_records')) {
+                localStorage.setItem('habit_tracker_records', JSON.stringify({}));
+            }
+            if (!localStorage.getItem('habit_user_data')) {
+                localStorage.setItem('habit_user_data', JSON.stringify({
+                    level: 1,
+                    currentXP: 0,
+                    maxXP: 100
+                }));
+            }
+        }
+
+        // 获取今天日期字符串
+        function getTodayString() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        // 获取指定日期所在周的所有日期
+        function getWeekDates(targetDateStr) {
+            const targetDate = targetDateStr ? new Date(targetDateStr) : new Date();
+            const currentDay = targetDate.getDay();
+            const sunday = new Date(targetDate);
+            sunday.setDate(targetDate.getDate() - currentDay);
+            
+            const weekDates = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(sunday);
+                date.setDate(sunday.getDate() + i);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                weekDates.push(`${year}-${month}-${day}`);
+            }
+            return weekDates;
+        }
+
+        // 获取用户数据
+        function getUserData() {
+            return JSON.parse(localStorage.getItem('habit_user_data'));
+        }
+
+        // 保存用户数据
+        function saveUserData(data) {
+            localStorage.setItem('habit_user_data', JSON.stringify(data));
+        }
+
+        // 获取习惯列表
+        function getHabits() {
+            return JSON.parse(localStorage.getItem('habit_tracker_habits'));
+        }
+
+        // 获取打卡记录
+        function getRecords() {
+            return JSON.parse(localStorage.getItem('habit_tracker_records'));
+        }
+
+        // 保存打卡记录
+        function saveRecords(records) {
+            localStorage.setItem('habit_tracker_records', JSON.stringify(records));
+        }
+
+        // 获取精灵形态
+        function getElfForm(level) {
+            if (level >= 15) return ELF_FORMS[15];
+            if (level >= 8) return ELF_FORMS[8];
+            return ELF_FORMS[1];
+        }
+
+        // 显示XP增加动画
+        function showXPGain(amount) {
+            const popup = document.getElementById('xpPopup');
+            popup.textContent = `+${amount} XP`;
+            popup.className = 'xp-popup';
+            
+            setTimeout(() => {
+                popup.className = 'xp-popup';
+            }, 10);
+        }
+
+        // 计算每日进度
+        function getDailyProgress() {
+            const habits = getHabits();
+            const records = getRecords();
+            const targetDate = selectedDate || getTodayString();
+            const totalPossible = habits.length;
+            const completedCount = records[targetDate] ? records[targetDate].length : 0;
+            
+            return {
+                completed: completedCount,
+                total: totalPossible,
+                percentage: totalPossible === 0 ? 0 : Math.round((completedCount / totalPossible) * 100)
+            };
+        }
+
+        // 计算每周进度
+        function getWeeklyProgress() {
+            const habits = getHabits();
+            const records = getRecords();
+            const targetDateStr = selectedDate || getTodayString();
+            const weekDates = getWeekDates(targetDateStr);
+            
+            const totalDays = 7;
+            let completedDays = 0;
+            
+            weekDates.forEach(dateStr => {
+                const dayRecords = records[dateStr] || [];
+                if (dayRecords.length === habits.length && habits.length > 0) {
+                    completedDays++;
+                }
+            });
+            
+            return {
+                completed: completedDays,
+                total: totalDays,
+                percentage: Math.round((completedDays / totalDays) * 100)
+            };
+        }
+
+        // 渲染周视图
+        function renderWeekView() {
+            const weekView = document.getElementById('weekView');
+            weekView.innerHTML = '';
+            
+            const targetDateStr = selectedDate || getTodayString();
+            const weekDates = getWeekDates(targetDateStr);
+            const today = getTodayString();
+            const records = getRecords();
+            const habits = getHabits();
+            
+            const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+            
+            weekDates.forEach((dateStr, index) => {
+                const isToday = dateStr === today;
+                const dateObj = new Date(dateStr);
+                const dayNum = dateObj.getDate();
+                
+                const dayRecords = records[dateStr] || [];
+                const isCompleted = dayRecords.length === habits.length && habits.length > 0;
+                const isSelected = dateStr === (selectedDate || today);
+                
+                const dayItem = document.createElement('div');
+                dayItem.className = 'flex flex-col items-center gap-1 cursor-pointer';
+                dayItem.onclick = () => {
+                    selectedDate = dateStr;
+                    renderHabitTracker();
+                };
+                
+                dayItem.innerHTML = `
+                    <span class="text-xs ${isToday ? 'text-green-600 font-bold' : 'text-gray-600'}">${dayNames[index]}</span>
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all ${
+                        isCompleted ? 'bg-green-500 text-white font-bold' : 
+                        isSelected ? 'bg-green-100 border-2 border-green-500 text-green-700 font-bold' :
+                        'bg-gray-100 text-gray-600'
+                    }">
+                        ${isCompleted ? '✓' : dayNum}
+                    </div>
+                `;
+                
+                weekView.appendChild(dayItem);
+            });
+        }
+
+        // 打卡习惯
+        function toggleHabit(habitId) {
+            const targetDate = selectedDate || getTodayString();
+            const records = getRecords();
+            const userData = getUserData();
+            
+            if (!records[targetDate]) {
+                records[targetDate] = [];
+            }
+            
+            const index = records[targetDate].indexOf(habitId);
+            if (index > -1) {
+                records[targetDate].splice(index, 1);
+                userData.currentXP = Math.max(0, userData.currentXP - 10);
+            } else {
+                records[targetDate].push(habitId);
+                userData.currentXP += 10;
+                showXPGain(10);
+                
+                while (userData.currentXP >= userData.maxXP && userData.level < 21) {
+                    userData.level++;
+                    userData.currentXP -= userData.maxXP;
+                    userData.maxXP = Math.floor(userData.maxXP * 1.1);
+                    alert(`🎉 恭喜升级到 Lv.${userData.level}！`);
+                }
+            }
+            
+            saveRecords(records);
+            saveUserData(userData);
+            renderHabitTracker();
+        }
+
+        // 渲染习惯追踪器
+        function renderHabitTracker() {
+            const habits = getHabits();
+            const records = getRecords();
+            const userData = getUserData();
+            const targetDate = selectedDate || getTodayString();
+            const targetRecords = records[targetDate] || [];
+            
+            // 更新精灵形态
+            const elfForm = getElfForm(userData.level);
+            document.getElementById('elfCharacter').textContent = elfForm.emoji;
+            
+            // 更新等级和经验
+            document.getElementById('levelText').textContent = `Lv.${userData.level} ${elfForm.name}`;
+            document.getElementById('xpText').textContent = `${userData.currentXP}/${userData.maxXP} XP`;
+            const xpPercentage = (userData.currentXP / userData.maxXP) * 100;
+            document.getElementById('xpBar').style.width = `${xpPercentage}%`;
+            
+            // 更新日期
+            const dateObj = new Date(targetDate);
+            const options = { month: 'long', day: 'numeric', weekday: 'long' };
+            let dateText = dateObj.toLocaleDateString('zh-CN', options);
+            if (targetDate === getTodayString()) {
+                dateText = '今天 · ' + dateText;
+            }
+            document.getElementById('currentDate').textContent = dateText;
+            
+            // 更新进度
+            const daily = getDailyProgress();
+            const weekly = getWeeklyProgress();
+            
+            document.getElementById('dailyProgressText').textContent = `${daily.completed}/${daily.total}`;
+            document.getElementById('dailyProgressBar').style.width = `${daily.percentage}%`;
+            
+            document.getElementById('weeklyProgressText').textContent = `${weekly.completed}/${weekly.total}`;
+            document.getElementById('weeklyProgressBar').style.width = `${weekly.percentage}%`;
+            
+            // 渲染周视图
+            renderWeekView();
+            
+            // 渲染习惯列表
+            const habitList = document.getElementById('habitList');
+            habitList.innerHTML = '';
+            
+            habits.forEach(habit => {
+                const isCompleted = targetRecords.includes(habit.id);
+                const habitItem = document.createElement('div');
+                habitItem.className = `flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all ${
+                    isCompleted ? 'bg-green-100 border-2 border-green-400' : 'bg-white/60 border-2 border-transparent hover:bg-white/80'
+                }`;
+                habitItem.onclick = () => toggleHabit(habit.id);
+                
+                habitItem.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">${habit.icon}</span>
+                        <span class="font-bold text-sm text-gray-800 ${isCompleted ? 'text-green-700' : ''}">${habit.name}</span>
+                    </div>
+                    <div class="w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                        isCompleted ? 'bg-green-500 text-white' : 'border-2 border-gray-300'
+                    }">
+                        ${isCompleted ? '✓' : ''}
+                    </div>
+                `;
+                
+                habitList.appendChild(habitItem);
+            });
+        }
+
+        // 打开习惯追踪器
+        function openHabitTracker() {
+            // 每次打开时重置所有数据（演示模式）
+            localStorage.setItem('habit_tracker_habits', JSON.stringify(DEFAULT_HABITS));
+            localStorage.setItem('habit_tracker_records', JSON.stringify({}));
+            localStorage.setItem('habit_user_data', JSON.stringify({
+                level: 1,
+                currentXP: 0,
+                maxXP: 100
+            }));
+            
+            selectedDate = getTodayString();
+            
+            const datePicker = document.getElementById('datePicker');
+            datePicker.value = selectedDate;
+            datePicker.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    selectedDate = e.target.value;
+                    renderHabitTracker();
+                }
+            });
+            
+            renderHabitTracker();
+            document.getElementById('habitModal').classList.add('active');
+            document.getElementById('habitModalContent').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭习惯追踪器
+        function closeHabitTracker() {
+            // 关闭时清空所有数据（演示模式）
+            localStorage.removeItem('habit_tracker_habits');
+            localStorage.removeItem('habit_tracker_records');
+            localStorage.removeItem('habit_user_data');
+            
+            document.getElementById('habitModal').classList.remove('active');
+            document.getElementById('habitModalContent').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 打开领养精灵模态框
+        function openAdoptModal() {
+            document.getElementById('adoptModal').classList.add('active');
+            document.getElementById('adoptModalContent').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭领养精灵模态框
+        function closeAdoptModal() {
+            document.getElementById('adoptModal').classList.remove('active');
+            document.getElementById('adoptModalContent').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 打开食谱模态框
+        function openRecipeModal() {
+            document.getElementById('recipeModal').classList.add('active');
+            document.getElementById('recipeModalContent').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭食谱模态框
+        function closeRecipeModal() {
+            document.getElementById('recipeModal').classList.remove('active');
+            document.getElementById('recipeModalContent').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 打开呼噜云模态框
+        function openSleepModal() {
+            document.getElementById('sleepModal').classList.add('active');
+            document.getElementById('sleepModalContent').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭呼噜云模态框
+        function closeSleepModal() {
+            document.getElementById('sleepModal').classList.remove('active');
+            document.getElementById('sleepModalContent').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 打开成长日记模态框
+        function openDiaryModal() {
+            updateDiaryDate();
+            document.getElementById('diaryModal').classList.add('active');
+            document.getElementById('diaryModalContent').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 更新日记日期
+        function updateDiaryDate() {
+            const today = new Date();
+            const currentDay = today.getDay(); // 0 is Sunday
+            
+            const start = new Date(today);
+            start.setDate(today.getDate() - currentDay); // Last Sunday (or today if Sunday)
+            
+            const end = new Date(today);
+            end.setDate(today.getDate() + (6 - currentDay)); // Next Saturday (or today if Saturday)
+            
+            // Format: YYYY.MM.DD
+            const formatDate = (date) => {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}.${m}.${d}`;
+            };
+            
+            const dateRange = `${formatDate(start)} ~ ${formatDate(end)}`;
+            document.getElementById('diaryDateRange').textContent = dateRange;
+        }
+
+        // 关闭成长日记模态框
+        function closeDiaryModal() {
+            document.getElementById('diaryModal').classList.remove('active');
+            document.getElementById('diaryModalContent').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 提交反馈
+        function submitFeedback() {
+            const input = document.getElementById('feedbackInput');
+            const value = input.value.trim();
+            
+            if (value) {
+                // 模拟发送
+                const btn = document.querySelector('button[onclick="submitFeedback()"]');
+                const originalText = btn.innerText;
+                
+                btn.innerText = '发送成功！✨';
+                btn.classList.remove('bg-green-600', 'hover:bg-green-500');
+                btn.classList.add('bg-green-700');
+                input.value = '';
+                
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('bg-green-700');
+                    btn.classList.add('bg-green-600', 'hover:bg-green-500');
+                }, 2000);
+            } else {
+                alert('请先写下你想说的话哦～');
+            }
+        }
+
+        // 选择心情
+        function selectMood(element) {
+            // 移除所有表情的激活状态
+            const emojis = document.querySelectorAll('.mood-emoji');
+            emojis.forEach(emoji => {
+                emoji.classList.remove('active-mood');
+            });
+            
+            // 激活当前点击的表情
+            element.classList.add('active-mood');
+        }
+
+    </script>
 
     <!-- FAQ 交互脚本 -->
     <script>
